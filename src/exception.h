@@ -32,7 +32,7 @@
 #define try \
     int j = push_jmp(); \
     int exception = setjmp(jmpStack.buf[j]); \
-    int flag = 1; \
+    volatile int flag = 1; \
     if (exception == 0)
 
 #define catch(e) \
