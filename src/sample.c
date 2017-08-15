@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "exception.h"
 
+// catch an exception
 void foo(void)
 {
     printf(".. In function: %s\n", __FUNCTION__);
@@ -9,6 +10,7 @@ void foo(void)
     throw(1);
 }
 
+// catch and rethrow an exception
 void bar(void)
 {
     printf(".. In function: %s\n", __FUNCTION__);
@@ -23,10 +25,30 @@ void bar(void)
     }
 }
 
+// nested try-catch blocks
+void baz(void)
+{
+    printf(".. In function: %s\n", __FUNCTION__);
+    try {
+        try {
+            foo();
+        } finally {
+            printf
+                (".. In function: %s, exception is detected, error code: %d!\n",
+                 __FUNCTION__, _except_code_);
+        }
+        bar();
+    } finally {
+        printf(".. In function: %s, exception is detected, error code: %d!\n",
+               __FUNCTION__, _except_code_);
+    }
+}
+
 int main(void)
 {
     printf(".. In function: %s\n", __FUNCTION__);
 
+    printf(".. Test 'try - catch - finally' block:\n");
     // begin detecting exception
     try {
         bar();
@@ -41,19 +63,23 @@ int main(void)
         printf(".. In function: %s, exception is detected, error code: %d!\n",
                __FUNCTION__, 1);
     }
-#endif
 
     // exception (2) caught
     catch(2) {
         printf(".. In function: %s, exception is detected, error code: %d!\n",
                __FUNCTION__, 2);
     }
+#endif
 
-    // others exceptions caught
+    // other exceptions caught
     finally {
-        printf(".. In function: %s, unkown exception is detected!\n",
-               __FUNCTION__);
+        printf
+            (".. In function: %s, default exception is detected, error code: %d!\n",
+             __FUNCTION__, _except_code_);
     }
+
+    printf("\n.. Test nested 'try - catch - finally' blocks:\n");
+    baz();
 
     printf(".. End of program.\n");
 
