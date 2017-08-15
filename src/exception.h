@@ -29,15 +29,19 @@
 #include <stdlib.h>
 #include <setjmp.h>
 
+#define RETHROWABLE (_rethrowable_ || \
+    (!_rethrowable_ && pop_jmp() && (_rethrowable_ = 1)))
+
 #define try \
-    int j = push_jmp(); \
-    int exception = setjmp(jmpStack.buf[j]); \
-    volatile int flag = 1; \
-    if (exception == 0)
+    int _except_code_ = setjmp(jmpStack.buf[push_jmp()]); \
+    volatile int _rethrowable_ = 0; \
+    if (_except_code_ == 0)
 
 #define catch(e) \
-    if (flag == 1) { pop_jmp(); flag == 0; } \
-    if(exception == e)
+    else if(_except_code_ && RETHROWABLE)
+
+#define finally \
+    else if(RETHROWABLE)
 
 #define throw(e) \
     if(jmpStack.count > 0) longjmp(jmpStack.buf[jmpStack.count - 1], e)
@@ -56,9 +60,10 @@ static inline int push_jmp(void)
     return jmpStack.count++;
 }
 
-static inline void pop_jmp(void)
+static inline int pop_jmp(void)
 {
     jmpStack.buf = realloc(jmpStack.buf, sizeof(jmp_buf) * (--jmpStack.count));
+    return 1;
 }
 
-#endif                          /* EXCEPTION_H */
+#endif /* EXCEPTION_H */

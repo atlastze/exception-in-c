@@ -3,42 +3,59 @@
 
 void foo(void)
 {
-    printf("Call function %s() ...\n", __FUNCTION__);
+    printf(".. In function: %s\n", __FUNCTION__);
+    printf(".. In function: %s, throw exception, error code: %d\n",
+           __FUNCTION__, 1);
     throw(1);
 }
 
 void bar(void)
 {
-    printf("Call function %s() ...\n", __FUNCTION__);
+    printf(".. In function: %s\n", __FUNCTION__);
     try {
         foo();
     } catch(1) {
-        printf(".. %s() failed due to error 1!\n", __FUNCTION__);
+        printf(".. In function: %s, exception is detected, error code: %d!\n",
+               __FUNCTION__, 1);
+        printf(".. In function: %s, rethrow exception, error code: %d\n",
+               __FUNCTION__, 2);
         throw(2);
     }
 }
 
 int main(void)
 {
-    printf("Call function %s() ...\n", __FUNCTION__);
-    // Create a new exception
+    printf(".. In function: %s\n", __FUNCTION__);
+
+    // begin detecting exception
     try {
         bar();
-        // this never happens because process always throws error 1 
-        printf("Got to end of process!\n");
+        // the bellowing code is unreachable,
+        // because process always throws error
+        printf(".. Unreachable code!\n");
     }
 
-    // is executed when throw(1) is called within the try
+#if 0
+    // exception (1) caught
     catch(1) {
-        printf(".. %s() failed due to error 1!\n", __FUNCTION__);
+        printf(".. In function: %s, exception is detected, error code: %d!\n",
+               __FUNCTION__, 1);
     }
+#endif
 
-    // is executed when throw(2) is called within the try
+    // exception (2) caught
     catch(2) {
-        printf(".. %s() failed due to error 2!\n", __FUNCTION__);
+        printf(".. In function: %s, exception is detected, error code: %d!\n",
+               __FUNCTION__, 2);
     }
 
-    printf("End of program.\n");
+    // others exceptions caught
+    finally {
+        printf(".. In function: %s, unkown exception is detected!\n",
+               __FUNCTION__);
+    }
+
+    printf(".. End of program.\n");
 
     return 0;
 }
